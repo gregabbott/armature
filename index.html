@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  color-scheme: light dark;
+	--light:hsl(60, 25%, 95%);
+	--dark:hsl(15, 5%, 10%);
+	--bg:light-dark(var(--light),var(--dark));
+	--fg:light-dark(var(--dark),var(--light));
+	--base_size:15px;
+	--half_base_size:calc(var(--base_size)/2);
+	--twice_base_size:calc(var(--base_size)*2);
+	--border: 1px solid var(--fg);
+}
+::-webkit-scrollbar {
+width: 1em;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  cursor: default;
+  border: var(--border);
+}
+@media (prefers-color-scheme: dark) {
+	::-moz-selection {
+		background:  var(--light);
+    color:var(--dark);
+  }
+	::selection{
+		background:var(--light);
+		color: var(--dark);
+	}
+}
+@media (prefers-color-scheme: light) {
+	::-moz-selection{
+    background:var(--dark);
+		color:var(--light);
+  }
+	::selection{
+		background: var(--dark);
+		color:var(--light);
+	}
+}
+* {
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  box-sizing: border-box;
+  line-height: 128%;
+  font-family: system-ui, sans-serif;
+  outline: none;
+}
+button {
+  margin: 1ch 0;
+  border: none;
+  background-color: var(--fg);
+  color: var(--bg);
+  padding: 3px 1ch;
+  border-radius: 3px;
+}
+main {
+  flex:1;
+  display: flex;
+  overflow: hidden;
+  flex-direction: row;
+  &> div {
+    width: 50%;
+    padding: 1ch;
+  }
+}
+@media (max-width: 600px) {/* Narrow / small viewport */
+  main{
+    overflow: auto;
+    flex-direction: column;
+    & > div {
+      scrollbar-gutter: stable;
+      width: 100%;
+    }
+    & > div:first-of-type{
+      border-bottom: var(--border);
+      .section{
+        padding: 1ch 0;
+      }
+    }
+  }
+}
+@media (min-width: 600px) {/* Normal / large viewport */
+    main{
+      & > div{
+        overflow-y: auto;
+      }
+      & > div:first-of-type{
+         padding: 0;
+         display: flex;
+         flex-direction: column;
+        border-right: var(--border);
+        .section {
+          padding: 1ch;
+          overflow-y: auto;
+        }
+       }
+  }
+}
+header {
+  text-align: center;
+  padding: 5px;
+  border-bottom: var(--border);
+}
+a{
+  color: var(--fg);
+}
+[popover] p{
+  margin-bottom: 1em;
+}
+footer{
+    border-top:var(--border);
+    text-align: center;
+    button {
+      color: var(--fg);
+      padding: 2px;
+      background: transparent;
+      border: var(--border);
+      border-color: transparent;
+      &:hover {
+        border-color: var(--border);
+      }
+    }
+  }
+footer,footer  *{
+  font-size: 10px;
+}
+  html,
+  body{
+      width:100dvw;
+      height:100dvh;
+      max-width:100dvw;
+      max-height: 100dvh;
+      background-color: var(--bg);
+      color: var(--fg);
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    .box{
+      padding: 0ch;
+      margin-bottom: 1ch;
+      display: flex;
+      flex-direction: column;
+    }
+    .field {
+      align-items: center;
+      width: 100%;
+      background: var(--bg);
+      display: flex;
+      flex-direction: row;
+      gap: 1ch;
+      label {
+        width: 100%;
+      }
+      input {
+        margin: 1ch;
+        padding: 0 1ch;
+      }
+    }
+    input[type=checkbox]{display: none;}
+    input[type=checkbox] + label:before {
+      content: '';
+      color: transparent;
+      width: 10px;
+      margin-right: 1ch;
+      height: 10px;
+      display: inline-flex;
+      border: var(--border);
+    }
+    :checked + label {
+      &:before{
+        background-color: var(--fg);
+      }
+    }
+    details
+    /*,details:open*/
+    {
+      border: var(--border);
+      padding: 1ch;
+    }
+    input,
+    textarea {
+      width: 100%;
+      display: block;
+      background-color: var(--bg);
+      border: var(--border);
+      resize: none;
+      border-radius: 3px;
+      &:focus{
+        outline: 1px solid var(--fg);
+      }
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      scrollbar-gutter: stable;
+    }
+    #svg_holder { 
+      margin: 0 0 1ch 0;
+      display: flex;
+      justify-items: center;
+      width: 100%;
+      max-width: 100%;
+      max-height: 360px;
+      height: 360px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;      
+      svg {
+        padding: 1ch;
+        margin: 0 auto;
+        width: auto;
+        max-height: 100%;
+        
+      }
+    }
+    table {
+      user-select: none;
+      border-radius: 3px;
+      width: 100%;
+      margin-bottom: 1ch;
+      border-collapse: collapse;
+      td,th{
+        padding: 0 1ch;
+      text-align: left;
+      }
+      * {
+        cursor: pointer;
+      }
+      tr th:first-of-type,
+      tr td:first-of-type{
+        padding-left: 0;
+      }
+      tr th:first-of-type:before,
+      tr td:first-of-type:before{
+        content: '';
+        border-radius: 20px;
+        display: inline-block;
+        margin-right: 1ch;
+        width: 10px;
+        height: 10px;
+        border: var(--border);
+      }
+      tr th:first-of-type:before{
+        border: none;
+      }
+      tr.active td:before{
+        background-color: var(--fg);
+      }
+      tr {
+        width: 100%;
+      }
+      i {
+        opacity: .5;
+      }
+    }
+    [popover]{
+      z-index: 9999999;
+      left: 50%;
+      padding: 1ch;
+      top:2ch;
+      width: 64ch;
+      border-radius: 3px;
+      margin-left: -32ch;
+      background-color: var(--bg);
+    }
+    body:has(:popover-open){
+      #hide_popover{display: block;}
+    }
+    #hide_popover{
+      position: fixed;
+      display: none;
+      top: 0;
+      left: 0;
+      margin: 0;
+      height: 100dvh;
+      width: 100dvw;
+      background-color: var(--dark);
+      opacity: .5;
+    }
+#input_tab_nav *{
+  user-select: none;
+  cursor: pointer;
+}
+#input_tab_nav{
+  margin-top: 1ch;
+  padding-left: 1ch;
+  border-bottom: var(--border);
+  display: flex;
+  flex-direction: row;
+  span{
+    margin-bottom:-1px;
+    padding: 0 1ch;
+    border: 1px solid transparent;
+    border-bottom-width: 2px;
+    &.active {
+      border-radius: 3px 3px 0 0;
+      border-color: var(--fg);
+      border-bottom-color: var(--bg);
+    }
+  }
+}
+  </style>
+<title>Armature Maker</title></head>
+<body><div popover id="popover_license"><h1>Armature Maker</h1>
+<a href="changelog.html">Changelog</a>
+<p>By and Copyright &copy; 2025 <a href="https://gregabbott.pages.dev/">Greg Abbott</a>. All rights reserved.<br>
+(Site, tool, documentation etc.)</p>
+<p>NO WARRANTY<br>
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</p>
+</div>
+  <header><b>Armature Maker</b></header>
+  <main>
+    <div class="input_holder">
+      <div id="input_tab_nav">
+        <span id="show_input_area_ratio_tab">Ratio</span>
+        <span id="show_input_area_grid_tab">Grid</span>
+      </div>
+      <div id="input_area_ratio_tab" class="section">
+      <div id="hide_popover"></div>
+      <div   id="ratio_presets_po">
+        <p><b>Presets</b> (Click to use)</p>
+        <table id="ratio_presets" class="presets"></table>
+      </div>
+        <div class="field">
+        <label for="ratio_width">Width Ratio:</label>
+        <input type="number" id="ratio_width" value="1" step="0.1" min="1">
+      </div>
+      <div class="field">
+        <label for="ratio_height">Height Ratio:</label>
+        <input
+        type="number"
+        id="ratio_height" 
+        value="1.414"
+        min="1"
+        step="0.1"
+        >
+      </div>
+      <button id="button_to_flip">Flip orientation</button>
+    </div><!--end input_area_ratio_tab -->
+    <div id="input_area_grid_tab" class="section">
+      <div class="field">
+        <input id="all_grey_lines" type="checkbox" >
+        <label for="all_grey_lines">Grey</label>
+      </div>
+      <div class="box">  
+        <p><b>Presets</b> (Click to use)</p>
+        <table id="grid_presets" class="presets"></table>
+      </fieldset>
+      </div><!--end grid_presets Box-->
+      <div>
+      <b>Grid options</b>
+      <div class="box">
+      <div class="field">
+        <input id="main_diagonals" type="checkbox" checked>
+        <label for="main_diagonals">Main Diagonals</label>
+      </div>
+      <div class="field">
+        <input id="center_lines" type="checkbox" checked>
+        <label for="center_lines">Center Lines</label>
+      </div>
+      <div class="field">
+        <input id="diamond" type="checkbox"><label for="diamond">Diamond</label>
+      </div>
+    </div>
+      <div class="box">
+        <p>Baroque <span title="Major + minor diagonals intersect at 90&deg;. Resizing the output to a different ratio would change the intersection angle and cause the grid to no longer function as a baroque armature.">(Specific to Canvas Ratio)</span></p>
+      <div class="field">
+        <input id="baroque" type="checkbox" >
+        <label for="baroque" title=>Full</label>
+      </div>
+      <!--Simpler grids based on baroque armature:-->
+        <div class="field">
+          <input id="golden_triangle" type="checkbox"  >
+          <label for="golden_triangle">Golden triangle</label>
+        </div>
+        <div class="field">
+          <input id="harmonious_triangle" type="checkbox" >
+          <label for="harmonious_triangle">Harmonious triangle</label>
+        </div>
+      </div><!--end baroque area-->
+      <div class="box">Rabatment
+      <div class="field">
+        <input id="rabatment_squares_left_or_top" type="checkbox"  >
+        <label for="rabatment_squares_left_or_top">Square Left/Top</label>
+      </div>
+      <div class="field">
+        <input id="rabatment_squares_right_or_bottom" type="checkbox"  >
+        <label for="rabatment_squares_right_or_bottom">Square Right/Bottom</label>
+      </div>
+      <div class="field">
+        <input id="rabatment_circles" type="checkbox"  >
+        <label for="rabatment_circles">Circles</label>
+      </div>
+      </div><!--end rabatment area-->
+      <div class="box">
+      Triangles (lines from corners to middles)
+      <div class="field">
+        <input id="triangles_small" type="checkbox" ><label for="triangles_small">Small</label>
+      </div>
+      <div class="field">
+        <input id="triangles_big" type="checkbox" checked><label for="triangles_big">Big</label>
+      </div>
+      </div><!--end triangles area-->
+      <div class="box">
+      Basic
+      <div class="field">
+        <input id="grid_3x3" type="checkbox" >
+        <label for="grid_3x3">3x3</label>
+      </div>
+      <div class="field">
+        <input id="grid_4x4" type="checkbox">
+        <label for="grid_4x4">4x4</label>
+      </div>
+      <div class="field">
+      <input id="grid_5x5"type="checkbox"><label for="grid_5x5">5x5</label>
+      </div>
+      <div class="field">
+        <input id="grid_6x6" type="checkbox" >
+        <label for="grid_6x6">6x6</label>
+      </div>
+      </div><!-- end basic area -->
+    </div><!--end grid options-->
+    </div><!--end input_area_grid_tab -->
+    </div><!--end input_holder-->
+    <div class="output_holder">
+      <button id="button_to_copy_svg">Copy SVG</button>
+      <button id="button_to_save_svg">Save SVG</button>
+      <button id="button_to_save_png">Save PNG</button>
+      <div id="svg_holder"></div>
+      <!--
+      <label for="svg_code">SVG Code:</label>
+      <textarea id="svg_code"></textarea>
+      -->
+    </div>
+  </main>
+  <canvas id=temp_canvas_for_png hidden></canvas>
+  <footer>
+    <button popovertarget="popover_license">License | By + &copy; </button> <a href="https://gregabbott.pages.dev/">Greg Abbott</a> 2025 |  <a href="https://buymeacoffee.com/gregabbott">Buy Me A Coffee</a> | 
+    <a href="https://ko-fi.com/gregabbott">KoFi</a>
+  </footer>
+  <script>
+    let gl0={}//global namespace toplevel for access
+    gl0._by=`Greg Abbott`
+    //grab elements from DOM
+    function get_id(x){return document.getElementById(x)}
+    let el={}
+    let grid_item_options_ids=[
+      `main_diagonals`,
+      `baroque`,
+      `center_lines`,
+      `triangles_small`,
+      `triangles_big`,
+      `diamond`,
+      `grid_3x3`,
+      `grid_4x4`,
+      `grid_5x5`,
+      `grid_6x6`,
+      `harmonious_triangle`,
+      `golden_triangle`,
+      `rabatment_squares_left_or_top`,
+      `rabatment_squares_right_or_bottom`,
+      `rabatment_circles`,
+    ]
+    let other_item_options_ids=[
+      `all_grey_lines`,
+      `ratio_width`,
+      `ratio_height`,
+    ]
+    other_item_options_ids.forEach(setup_checkbox)
+    grid_item_options_ids.forEach(setup_checkbox)
+    function setup_checkbox(id){
+      let element=get_id(id)
+      el[id]= element
+      element.addEventListener('keyup', generate_svg)
+      element.addEventListener('change', generate_svg)
+    }
+    function add_onchange_event(elements,fn){
+      elements.forEach(x=>{
+        if(x.type!=='checkbox'){x.addEventListener('keyup',fn)}
+          x.addEventListener('change', fn)
+      })
+    }
+    function get_date_stamp(date){
+      function get_date_parts (date=new Date()){
+        function p(n){return n.toString().padStart(2,'0')}
+        return {
+        y:p(date.getFullYear()),
+        M:p(date.getMonth() + 1),
+        d:p(date.getDate()),
+        h:p(date.getHours()),
+        m:p(date.getMinutes()),
+        s:p(date.getSeconds())
+        }
+      }
+      const {y,M,d,h,m,s} = get_date_parts(date)
+      return `${y}_${M}${d}_${h}${m}_${s}`
+    }
+saving_files()
+function saving_files(){
+  let button_to_save_svg=get_id('button_to_save_svg')
+  button_to_save_svg.onclick=()=>{
+    save_file({data:gl0.svg,ext:'svg'})
+  }
+  let button_to_save_png=get_id('button_to_save_png')
+  function png_saver(){
+    save_png_data_to_png_file({ data: gl0.png, name: 'Armature' })
+  }
+  let long_d=`Armature generated using tool by ${gl0._by}`
+  let png_meta= {
+    //Standard
+  title: 'Armature',
+  author: gl0._by,
+  description: long_d,
+  copyright: `Copyright 2025 ${gl0._by}. All rights reserved.`,
+  creation_time: new Date().toISOString(),//ISO!
+  software: `Armature tool by ${gl0._by}`,
+  disclaimer: 'This image is for personal use only. Commercial use requires permission.',
+  comment: '',
+  source: 'https://gregabbott.pages.dev',
+  // Thumbnail data URI (optional):
+    //preview: 'data:image/png;base64,...', 
+//Custom fields
+  artist:gl0._by,
+  license: 'None',
+  //version: '1.0.0',
+  //location: '',
+  keywords: 'armature, grid, composition',
+  tags: 'guide',
+  medium: 'Digital Art',
+  //dimensions: '6000x4000 pixels'
+}
+  button_to_save_png.onclick=()=>{
+    if(gl0.png!==null){//use stored png
+      //user clicked save more than once without changing SVG
+      return png_saver()//EXIT
+    }
+    //when SVG changes, tool clears any stored PNG
+    //generate new PNG to reflect current SVG
+    //if SVG exceed sensible max wXh for PNG, scale down
+    let w = gl0.svg_width
+    let h = gl0.svg_height
+    let longest_svg_side_px = Math.max(w,h)
+    let max_png_side_length = 1500//px
+    let divide_by = longest_svg_side_px>max_png_side_length
+      ?longest_svg_side_px/max_png_side_length
+      :1
+      //faint watermark visible if flatten and threshold PNG
+      //font size applicable when working at scale 8k max size
+    let png_credit=`<text x="${(w/2)+50}" y="${(h/2)-50}" text-anchor="start" font-family="Arial" font-size="100" style="fill-opacity:0.01;fill:#808080;">Armature via ${gl0._by}</text>`
+    convert_svg_to_png({
+      svg:gl0.svg.replace('</svg>',png_credit+'</svg>'),
+      width:(w/divide_by).toFixed(0),
+      height:(h/divide_by).toFixed(0),
+    })
+    .then(png_data=>{
+        gl0.png=
+        png_data
+        // Maximum call stack issue with:
+        // insert_text_chunks_into_png(png_data,png_meta)
+        png_saver()
+    })
+  }
+  function insert_text_chunks_into_png(base64_png, text_chunks) {
+    //2025_0214
+    //Note PNG text chunks differ to EXIF or IPTC
+    //View PNG in dedicated image app to see inserted data
+  function crc32(buf) {
+    let table = new Uint32Array(256)
+    for (let i = 0; i < 256; i++) {
+      let c = i
+      for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1)
+      table[i] = c
+    }
+    let crc = 0xFFFFFFFF
+    for (let i = 0; i < buf.length; i++) {
+      crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF]
+    }
+    return new Uint8Array([(crc ^ 0xFFFFFFFF) >>> 24 & 255, (crc ^ 0xFFFFFFFF) >>> 16 & 255, (crc ^ 0xFFFFFFFF) >>> 8 & 255, (crc ^ 0xFFFFFFFF) & 255])
+  }
+  let bin = atob(base64_png.split(',')[1])
+  let bytes = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+  let header = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]) // PNG signature
+  if (!bytes.slice(0, 8).every((b, i) => b === header[i])) 
+    throw new Error("Not a valid PNG file")
+  let pos = 8 // After header
+  while (pos < bytes.length) {
+    let len = (bytes[pos] << 24) | (bytes[pos+1] << 16) | (bytes[pos+2] << 8) | bytes[pos+3]
+    let type_str = new TextDecoder().decode(bytes.slice(pos+4, pos+8))
+    if (type_str === "IHDR") pos += len + 12 // Skip header
+    else break
+  }
+  Object.entries(text_chunks)
+  .forEach(([keyword, text]) => {
+    let text_data = new TextEncoder().encode(keyword + '\0' + text) // tEXt format
+    let length = new Uint8Array([
+      (text_data.length >> 24) & 255,
+      (text_data.length >> 16) & 255, 
+      (text_data.length >> 8) & 255,
+      text_data.length & 255
+    ])
+    let type = new TextEncoder().encode("tEXt")
+    let data = new Uint8Array([...type, ...text_data])
+    // Calculate CRC32 for 'tEXt' + content:
+    let crc = crc32(data)
+    let chunk_bytes = new Uint8Array([...length,...data,...crc])
+    bytes = new Uint8Array([
+      ...bytes.slice(0, pos),
+      ...chunk_bytes,
+      ...bytes.slice(pos)
+    ])
+    pos += chunk_bytes.length
+  })
+  let new_base64 = "data:image/png;base64," + btoa(String.fromCharCode(...bytes))
+  return new_base64
+}
+function convert_svg_to_png({svg, width = 300, height = 300}) {
+  return new Promise(resolve => {
+    let img = new Image()
+    let svg_blob = new Blob([svg], { type: 'image/svg+xml' })
+    let url = URL.createObjectURL(svg_blob)
+    img.onload = () => {
+      let canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      let ctx = canvas.getContext('2d')
+      ctx.imageSmoothingEnabled = false //Disable anti aliasing
+      ctx.clearRect(0, 0, width, height)
+      ctx.drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(url)
+        resolve(canvas.toDataURL('image/png'))
+    }
+    img.onerror = () => {
+      console.error('Error loading SVG')
+      resolve(null)
+    }
+    img.src = url
+  })
+}
+function save_png_data_to_png_file({data, name}) {
+  let a = document.createElement('a')
+  a.href = data
+  a.download = `${name} ${get_date_stamp()}.png`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+  function save_file({ data, name='armature', ext }) {
+    const type = {
+        png: 'image/png',
+        txt: 'text/plain',
+        svg: 'image/svg+xml'
+    }[ext]||'text/plain'
+    const blob = new Blob([data], { type: type })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `${name} ${get_date_stamp()}.${ext}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(link.href)
+  }
+}
+setup_input_area_sections()
+function setup_input_area_sections(){
+  let ids = [
+`show_input_area_ratio_tab`,
+`show_input_area_grid_tab`,
+`input_area_ratio_tab`,
+`input_area_grid_tab`,
+]
+let el={}
+let buttons =[]
+let areas=[]
+ids.forEach(id=>{
+let element=get_id(id)
+  el[id]=element
+  if(id.startsWith('show'))buttons.push(element)
+  else{areas.push(element)}
+})
+function hide_areas_and_deactivate_buttons(){
+  areas.forEach(area=>area.hidden=true)
+  buttons.forEach(button=>button.classList.remove('active'))
+}
+el.show_input_area_ratio_tab.onclick=
+el.show_input_area_grid_tab.onclick=e=>{
+  hide_areas_and_deactivate_buttons()
+  e.target.classList.add('active')
+  let relative_area = el[e.target.id.replace('show_','')]
+  relative_area.hidden=false
+}
+//preload initial section
+el.show_input_area_grid_tab.click()
+//el.show_input_area_ratio_tab.click()
+}
+      let grid_preset_row_elements=[]
+      function remove_active_class_from_grid_preset(){
+        grid_preset_row_elements.forEach(row=>{
+          row.classList.remove('active')
+        })
+      }
+      add_onchange_event(
+        grid_item_options_ids.map(x=>el[x]),
+        remove_active_class_from_grid_preset
+      )
+      setup_grid_presets()
+    function setup_grid_presets(){
+      //let user load specific set of grid options in one click
+      // 2025_0212
+      let grid_presets_area=get_id('grid_presets')
+      let grid_presets=[
+        {
+          name:`Clear grid options`,
+          opts:[]
+        },
+        {
+          name:'Harmonic Symmetry',
+          opts:[
+          `triangles_small`,
+          //works with 3x3 OR 4x4
+          `grid_3x3`,
+          //`grid_4x4`,
+          `center_lines`,
+          `main_diagonals`,
+          `diamond`
+        ]
+        },
+        {
+          name:`Baroque`,
+          opts:[`main_diagonals`,`baroque`]
+        },
+        {
+          name:'- Golden Triangle',
+          opts:[
+            `golden_triangle`,
+          //`center_lines`,
+        ]
+        },
+        {
+          name:'- Harmonious Triangle',
+          opts:[
+            `harmonious_triangle`,
+          //`center_lines`,
+        ]
+        },
+        {
+          name:`Diamond`,
+          opts:[`grid_4x4`,`diamond`,`main_diagonals`]
+        },
+      ]
+      function deselect_all_grid_options(){
+      grid_item_options_ids.forEach(name=>{
+        el[name].checked=false
+      })
+      remove_active_class_from_grid_preset()
+     }
+      grid_presets.forEach(o=>{
+        let row =       document.createElement('tr')
+        grid_presets_area.appendChild(row)
+        grid_preset_row_elements.push(row)//defined elsewhere
+        row.onclick=()=>{
+          deselect_all_grid_options()
+          row.classList.add('active')
+          o.opts.forEach(option_name=>{
+            //check it
+            el[option_name].checked=true
+          })
+          generate_svg()
+        }
+        let cell = row.appendChild(document.createElement('td'))
+        cell.innerText=o.name
+      })
+    }
+    let ratio_preset_row_elements=[]//Used later
+    function remove_active_from_all_ratio_preset_rows(){
+        ratio_preset_row_elements.forEach(row=>{
+          row.classList.remove('active')
+        })
+      }
+      add_onchange_event(
+        [el.ratio_width,el.ratio_height],
+        remove_active_from_all_ratio_preset_rows
+      )
+      setup_ratio_presets()
+    function setup_ratio_presets(){
+//populate dom with ratio presets
+let presets_area=get_id('ratio_presets')
+    //when ratio is "1:x", X squared equals the root name
+    // e.g. ratio 1:1.414 -> 1.414^2 = 2 -> root 2
+    //longest side divided by shortest = proportional number 
+    //p==portrait else landscape
+    let ratio_presets=[
+      {root:`1.777…`,
+        x:`18x24`,
+        d:1.3333333333,
+        //p:1,
+        c:`Poster | Photo`,
+        r:`3:4`
+      },
+      {root:`2`,
+        x:'A4, B4',
+        //5x7==1.4
+        //7x10 ==1.4285714286
+        d:1.4142135624,
+        //p:1,
+        c:`Manga`,
+        r:`~5:7`
+      },
+      {root:`~2.2`,
+        x:`27x40`,
+        d:1.481_481_481_481,
+        c:`One sheet (Poster)`,
+        //p:1,
+        r:`~2:3`,
+      },
+      {
+        root:`2.25`,
+        x:`10x15`,
+        d:1.5,
+        c:`Comic`,
+        //p:1,
+        r:`2:3`
+         },
+      {
+        root:`2.61`,
+        x:``,
+        d:1.618033988749894,
+        c:`Phi | Golden | Fibonacci`,
+        r:`~5:8`,
+      },
+      {root:`3`,
+        x:`~16x9`,
+        d:1.7320508076,
+        c:`TV`,
+        r:`~3:5`},
+      {root:`4`,
+        x:``,
+        d:2,
+        c:``,
+      r:`1:2`},
+      {
+        root:`5`,
+        x:`~4x9`,
+        d:2.2360679775,
+        c:`Movie`,
+        r:`~21:9`
+      },
+    ]
+    let top_row=presets_area.appendChild(
+        document.createElement('tr')
+      )
+      let cols = ['root','x','c','r']
+      let table_headers=    ['Root','Example',`For`,`Ratio`]
+      table_headers.forEach(s=>{
+        let e = top_row.appendChild(document.createElement('th'))
+        e.innerText=s
+      })
+      //make rows
+      ratio_presets.forEach((preset,preset_i)=>{
+      let e = presets_area.appendChild(
+        document.createElement('tr')
+      )
+      ratio_preset_row_elements.push(e)//defined elsewhere
+      cols.forEach(col_k=>{
+        let td = e.appendChild(
+          document.createElement('td')
+        )
+        let v = preset[col_k]||'_'//indicate any missing value
+        //preset values use '~' to indicate 'approximately'
+        //swap '~' for CSS styling:
+        td.innerHTML=
+          v.startsWith('~')
+          ?`<i>${v.replace('~','')}</i>`
+          :v
+      })
+      e.onclick=()=>{
+        el.ratio_width.value=preset.p?1:preset.d
+        el.ratio_height.value=preset.p?preset.d:1
+        remove_active_from_all_ratio_preset_rows()
+        e.classList.add('active')
+        generate_svg()
+      }
+    })
+    }
+    button_to_copy_svg.onclick=()=>{
+      copy_to_clipboard(gl0.svg,button_to_copy_svg)//XXX
+    }
+function copy_to_clipboard(str,element) {
+navigator.clipboard.writeText(str)
+.then(() => {
+  let init_v = element.innerHTML
+  element.innerHTML='Copied!'
+  setTimeout(()=>{element.innerHTML=init_v},2000)
+})
+.catch(err=>{console.error('Failed to copy text: ', err)})
+}
+button_to_flip.onclick=()=>{
+  //get
+  let initial_width=el.ratio_width.value
+  let initial_height=el.ratio_height.value
+  //swap
+  el.ratio_width.value=initial_height
+  el.ratio_height.value=initial_width
+  generate_svg()
+}
+function generate_svg () {
+let _temp={}//namespace for globals (relative to this fn)
+let sf={}//namespace for functions that make SVG items
+let items=[]//svg parts push to
+const width_ratio = parseFloat(el.ratio_width.value)
+const height_ratio = parseFloat(el.ratio_height.value)
+const max_side = 8000
+const is_width_longest = width_ratio >= height_ratio
+//WIDTH HEIGHT of canvas
+const width = is_width_longest 
+  ? max_side
+  : (max_side * width_ratio / height_ratio)
+const height = is_width_longest 
+  ? (max_side * height_ratio / width_ratio)
+  : max_side
+//Coordinates
+let default_stroke_width='20'//<-- px
+const center_y = height / 2
+const center_x = width / 2
+let is_landscape=width >= height
+let min_side = Math.min(width,height)
+let tl=[0,0]
+let tm=[center_x,0]
+let tr=[width,0]
+let mr=[width,center_y]
+let ml=[0,center_y]
+let mm=[center_x,center_y]
+let bl=[0,height]
+let bm=[center_x,height]
+let br=[width,height]
+//COLOURS
+let grey='808080'
+let mint='00ffbb'
+let orange=`ff9900`
+let yellow=`ffff00`
+let red='FF0000'
+let blue='0088ff'
+let cyan='00ffff'
+let green=`00ff00`
+let white='ffffff'
+let black='000000'
+let silver='cccccc'
+let purple=`663388`//RAW:6600ff
+let purple_bright='8800ff'
+let gold=`FFCC00`//'classic_gold' = FFD700
+let pink = `ff00ff`
+function get_perpendicular_intersection(width, height) {
+var x = (width * height * height) / (width * width + height * height)
+var y = height - (width * width * height) / (width * width + height * height)
+return {
+  start: { x: 0, y: height },
+  end: { x: x, y: y }
+}
+}
+function get_perpendicular_intersection_2({start, end}) {
+  let move_x_by = width-end.x
+  let move_y_by= -end.y
+  return {
+    start: { x: start.x+move_x_by, y: start.y+move_y_by },
+    end: { x: width, y: 0 }
+  }
+}
+function get_coords_where_diagonals_intersect(){
+  //coords from a corner to where it intersects a main diagonal…
+  // (@ 90deg)
+  _temp.cords={}
+  _temp.cords.a=get_perpendicular_intersection(width,height)
+  _temp.cords.b=get_perpendicular_intersection_2(_temp.cords.a)
+  //storing semi_globally for duration of FN:
+  //various fns may wants this data - no need to re-calculate
+}
+sf.harmonious_triangle=()=>{
+  if(!_temp.cords)get_coords_where_diagonals_intersect()
+  let maj=create_svg_path({
+  p:[tl,br],
+  s:blue,
+  sw:default_stroke_width,
+  name:'harmonious_major'
+  })
+  let min1=create_svg_path({
+    //from bl, up and right, until touches main diag
+  p:[bl,
+    [_temp.cords.a.end.x,
+    _temp.cords.a.end.y,
+  ]
+    ],
+  s:red,
+  sw:default_stroke_width,
+  name:'harmonious_minor_1'
+  })
+  let min2=create_svg_path({
+    //from tr, down and left, until touches main diag
+  p:[
+    [_temp.cords.b.start.x,
+    _temp.cords.b.start.y,
+  ],
+  tr
+    ],
+  s:red,
+  sw:default_stroke_width,
+  name:'harmonious_minor_2'
+  })
+  return `<g id="harmonious_triangle">`+maj+min1+min2+`</g>`
+}
+sf.golden_triangle=()=>{
+  if(!_temp.cords)get_coords_where_diagonals_intersect()
+  let maj=create_svg_path({
+  p:[bl,tr],
+  s:blue,
+  sw:default_stroke_width,
+  name:'golden_major'
+  })
+let min1=create_svg_path({
+    //from tl, down and right, until touches main diag
+  p:[
+    tl,
+    [_temp.cords.a.end.x,
+    _temp.cords.b.start.y,
+  ],
+    ],
+  s:red,
+  sw:default_stroke_width,
+  name:'golden_minor_1'
+  })
+let min2=create_svg_path({
+    //from br, up and left, until touches main diag
+  p:[
+    br,
+    [_temp.cords.b.start.x,
+    _temp.cords.a.end.y,
+  ],
+    ],
+  s:red,
+  sw:default_stroke_width,
+  name:'golden_minor_2'
+  })
+   return `<g id="golden_triangle">`+maj+min1+min2+`</g>`
+}
+sf.baroque= function (){
+  if(!_temp.cords)get_coords_where_diagonals_intersect()
+//use '_temp.cords' to get Horizontal Vertical lines 
+  // where the major and minor diagonals intersect at 90 degrees
+let intersect_point_1=_temp.cords.a.end.x
+let intersect_point_left_vertical=create_svg_line({
+  start:{y:0,x:intersect_point_1},
+  end:{y:height,x:intersect_point_1},
+  hex:cyan
+    })
+let intersect_point_top_horizontal=create_svg_line({
+  start:{x:0,y:_temp.cords.a.end.y},
+  end:{x:width,y:_temp.cords.a.end.y},
+  hex:cyan
+    })
+let intersect_point_2=_temp.cords.b.start.x
+let intersect_point_bottom_horizontal=create_svg_line({
+  start:{x:0,y:_temp.cords.b.start.y},
+  end:{x:width,y:_temp.cords.b.start.y},
+  hex:cyan
+    })
+    let intersect_point_right_vertical=create_svg_line({
+  start:{y:0,x:intersect_point_2},
+  end:{y:height,x:intersect_point_2},
+  hex:cyan
+    })
+let intersecting_h_and_v_lines = 
+  intersect_point_left_vertical+
+  intersect_point_top_horizontal+
+  intersect_point_right_vertical+
+  intersect_point_bottom_horizontal
+function getDiagonalCrossingPoints({width, height}) {
+  if (width >= height) {
+    const delta_x = (height * height) / width
+    return {
+      bottomLeft: {
+        start: {x: 0, y: height},
+        end: {x: delta_x, y: 0}
+      },
+      bottomRight: {
+        start: {x: width, y: height},
+        end: {x: width - delta_x, y: 0}
+      },
+      topLeft: {
+        start: {x: 0, y: 0},
+        end: {x: delta_x, y: height}
+      },
+      topRight: {
+        start: {x: width, y: 0},
+        end: {x: width - delta_x, y: height}
+      }
+    }
+  } else {
+    const delta_y = (width * width) / height
+    return {
+      bottomLeft: {
+        start: {x: 0, y: height},
+        end: {x: width, y: height - delta_y}
+      },
+      bottomRight: {
+        start: {x: width, y: height},
+        end: {x: 0, y: height - delta_y}
+      },
+      topLeft: {
+        start: {x: 0, y: 0},
+        end: {x: width, y: delta_y}
+      },
+      topRight: {
+        start: {x: width, y: 0},
+        end: {x: 0, y: delta_y}
+      }
+    }
+  }
+}
+//lines from corner to other side which cross main diag @ 90deg
+const minor_line = getDiagonalCrossingPoints({width, height})
+let hex = blue
+let minor_line_from_br=create_svg_line({
+    ...minor_line.bottomRight,
+    hex
+  })
+let minor_line_from_tl=create_svg_line({
+    ...minor_line.topLeft,
+    hex
+  })
+  let minor_line_from_bl=create_svg_line({
+    ...minor_line.bottomLeft,
+    hex
+  })
+  let minor_line_from_tr=create_svg_line({
+    ...minor_line.topRight,
+    hex
+  })
+ // DRAW BOX AROUND THE AREA OF MINOR DIAGONAL
+  //(unlike a line, simpler code works for portrait & landscape)
+  let right_OR_bottom_minor_box=
+  make_rect({
+  x:minor_line.bottomRight.end.x,
+  y:minor_line.bottomRight.end.y,
+  w: 
+    minor_line.bottomRight.start.x-
+    minor_line.bottomRight.end.x
+  ,
+  h: 
+    minor_line.bottomRight.start.y-
+    minor_line.bottomRight.end.y
+  ,
+  f:'',//none
+  s:grey,
+  sw:default_stroke_width
+  })
+  let left_or_top_minor_box=
+  // left or top
+  //1 right OR bottom
+  make_rect({
+  x:0,
+  y:0,
+  w:minor_line.bottomLeft.end.x,
+  h: 
+    minor_line.bottomLeft.start.y-
+    minor_line.bottomLeft.end.y
+  ,
+  f:'',//none
+  s:grey,
+  sw:default_stroke_width
+  })
+let minor_lines_boxes=
+left_or_top_minor_box+right_OR_bottom_minor_box
+let minor_diagonal_lines =
+minor_line_from_tl+
+minor_line_from_tr+
+minor_line_from_br+
+minor_line_from_bl
+let baroque=`<g id="Baroque Armature">`
+  +minor_lines_boxes
+  +intersecting_h_and_v_lines
+  +minor_diagonal_lines
+  +`</g>`
+  return baroque
+}
+function create_svg_path({p,close = false,s='',f='',sw='',name}) {
+  //p = array of xy coordinates arrays [[0,0]]
+  let coordinates=p
+  if (!Array.isArray(coordinates)||coordinates.length === 0) {
+    throw new Error("Invalid coordinates array")
+  }
+  let path = `M ${coordinates[0][0]} ${coordinates[0][1]} `
+  let i = 1
+  let len = coordinates.length
+  for (; i < len; i++) {
+      path += `L ${coordinates[i][0]} ${coordinates[i][1]} `
+  }
+  if (close) {
+      path += `Z`
+  }
+let id=name.trim().length>0?` id="${escape_for_svg_id(name)}"`:``
+s=s.trim().length>0?`stroke:#${el.all_grey_lines.checked?grey:s.trim()};`:``
+sw=sw.trim().length>0?`stroke-width:${sw};stroke-linecap:round;stroke-linejoin:round;`:``
+f=`fill:${f.trim().length>0?f.trim():'none'};`
+  return `<path ${id} d="${path.trim()}" style="${s}${sw}${f}"/>`
+}
+function create_svg_line({start, end,hex='FF0000', name=''}) {
+  let id=name.trim().length>0?` id="${name.trim()}"`:``
+  var path = create_svg_path({p:[
+    [start.x,start.y],
+    [end.x,end.y]
+  ],
+  s:hex,
+  sw:default_stroke_width,
+  name
+  })
+  return path
+}
+let triangle_col=purple_bright
+function get_left_right_triangles(){
+  let triangle_pointing_right= create_svg_path({
+    p:[
+      tl,
+      mr,
+      bl,
+    ],
+    close:false,
+    s:is_landscape?pink:purple_bright,
+    //f:'',
+    sw:default_stroke_width,
+    name:'triangle_pointing_right'
+  })
+  let triangle_pointing_left= create_svg_path({
+    p:[
+      tr,
+      ml,
+      br,
+    ],
+    close:false,
+    s:is_landscape?pink:purple_bright,
+    //f:'',
+    sw:default_stroke_width,
+    name:'triangle_pointing_left'
+  })
+  let horizontal_triangles=`<g id="triangles_horizontal">`+
+    triangle_pointing_right
+    +triangle_pointing_left
+    +`</g>`
+  return horizontal_triangles
+}
+function get_up_down_triangles(){
+  let triangle_pointing_up= create_svg_path({
+    p:[
+      bl,
+      tm,
+      br,
+    ],
+    close:false,
+    s:is_landscape?purple_bright:pink,
+    //f:'',
+    sw:default_stroke_width,
+    name:'triangle_pointing_up'
+  })
+  let triangle_pointing_down=
+  create_svg_path({
+    p:[
+      tl,
+      bm,
+      tr,
+    ],
+    close:false,
+    s:is_landscape?purple_bright:pink,
+    //f:'',
+    sw:default_stroke_width,
+    name:'triangle_pointing_down'
+  })
+  let vertical_triangles=`<g id="triangles_vertical">`
+    +triangle_pointing_up
+    +triangle_pointing_down
+    +`</g>`
+    return vertical_triangles
+}
+sf.triangles_big=()=>{
+if(is_landscape)return get_left_right_triangles()
+else return get_up_down_triangles()
+}
+sf.triangles_small=()=>{
+  if(!is_landscape)return get_left_right_triangles()
+  else return get_up_down_triangles()
+}
+sf.triangles=()=>{
+}
+sf.center_lines=()=>{ 
+  let horizontal_line_center=create_svg_line({
+      start:{x:0,y:center_y},
+      end:{x:width,y:center_y},
+      hex:green,
+      name:`center line horizontal`
+    })
+let vertical_line_center=create_svg_line({
+  start:{x:center_x,y:0},
+  end:{x:center_x,y:height},
+  hex:green,
+  name:`center line vertical`
+})
+let center_lines = `<g id="center_lines">`
+  +horizontal_line_center
+  +vertical_line_center
+  +`</g>`
+  return center_lines
+}
+sf.main_diagonals=()=>{
+  let main_diagonal_tl_2_br__harmonious=create_svg_line({
+    start:{x:0,y:0},
+    end:{x:width,y:height},
+    hex:gold,
+    name:'Harmonious'
+  })
+  let main_diagonal_bl_2_tr__golden=create_svg_line({
+    start:{x:0,y:height},
+    end:{x:width,y:0},
+    hex:gold,
+    name:'Golden'
+  })
+   let main_diagonals=`<g id="Diagonals_main">`
+  + main_diagonal_tl_2_br__harmonious
+  + main_diagonal_bl_2_tr__golden
+  + `</g>`
+  return main_diagonals
+}
+  sf.diamond=()=>{
+    let _a ={x:0,y:center_y}
+    let _b = {x:center_x,y:0}
+    let _c = {x:width,y:center_y}
+    let _d ={x:center_x,y:height}
+  diamond_svg=`<g id="Diamond">`
++create_svg_line({start:_a,end:_b,hex:silver})
++create_svg_line({start:_b,end:_c,hex:silver})
++create_svg_line({start:_c,end:_d,hex:silver})
++create_svg_line({start:_d,end:_a,hex:silver})
++`</g>`
+return diamond_svg
+}
+sf.grid_3x3=()=>{
+  let grid_3x3 = make_grid({
+  width,
+  height,
+  rows:3,
+  cols:3,
+  stroke:orange,
+  fill:'',
+  stroke_width:default_stroke_width,
+})
+return grid_3x3
+}
+sf.grid_4x4=()=>{
+  let grid_4x4=make_grid({
+  width,
+  height,
+  rows:4,
+  cols:4,
+  stroke:mint,
+  fill:'',
+  stroke_width:default_stroke_width,
+})
+return grid_4x4
+}
+sf.grid_5x5=()=>{
+  let grid_5x5= make_grid({
+  width,
+  height,
+  rows:5,
+  cols:5,
+  stroke:mint,
+  fill:'',
+  stroke_width:default_stroke_width,
+})
+  return grid_5x5
+}
+sf.grid_6x6=()=>{
+  let   grid_6x6=make_grid({
+  width,
+  height,
+  rows:6,
+  cols:6,
+  stroke:mint,
+  fill:'',
+  stroke_width:default_stroke_width,
+})
+return grid_6x6
+}
+function make_grid({
+  name='',rows,cols,width,height,fill,stroke,stroke_width
+}) {
+    const boxWidth = width / cols
+    const boxHeight = height / rows
+    const coordinates = []
+    let row = 0
+    for (; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+            const x = col * boxWidth
+            const y = row * boxHeight
+            coordinates.push(make_rect({
+              x,
+              y,
+              w: boxWidth,
+              h: boxHeight,
+              f:fill,
+              s:stroke,
+              sw:stroke_width
+            }))
+        }
+    }
+    let id=`id="${
+      name.trim().length>0
+      ?escape_for_svg_id(name.trim())
+      :`grid ${rows}x${cols}`
+    }" `
+    return `<g ${id}>${coordinates.join('\n')}</g>`
+}
+function make_rect({
+  w='10',
+  h='10',
+  x='0',
+  y='0',
+  f='',//fill Hex
+  s='',//stroke HEX 
+  sw=default_stroke_width,//stroke_width
+  name='',
+  o='',//opacity
+  fo='',//fill_opacity
+}){
+  let id_att=name.trim()
+  id_att=id_att.length>0?`id="${escape_for_svg_id(id_att)}"`:''
+let fill=`fill:${
+  f.trim().length===0?'none'
+  :
+  '#'+(el.all_grey_lines.checked?grey:f)
+  }; `
+let stroke=
+  s.trim().length===0?''
+  :`stroke:#${el.all_grey_lines.checked?grey:s.trim()}; `
+sw=sw.trim().length>0?`stroke-width:${sw.trim()};`:''
+o=o.trim().length>0?`opacity:${o};`:''
+fo=fo.trim().length>0?`fill-opacity:${fo};`:''
+  return  `<rect ${id_att} style="${fo}${fill}${stroke}${sw}${o}" width="${w}" height="${h}" x="${x}" y="${y}"/>`
+}
+sf.rabatment_circles=()=>{
+  let half_min_side=min_side/2
+  let circle_1_col=red
+  //circle cX = X position of center of circle, same for cy
+  let tl=`<circle cx="${half_min_side}" cy="${half_min_side}" r="${half_min_side}" style="fill:none;stroke:#${all_grey_lines.checked?grey:circle_1_col};stroke-width:${default_stroke_width}"/>`
+  +
+  create_svg_path({
+    //45deg rotated square INSIDE of circle
+    p:[
+      [0,half_min_side],
+      [half_min_side,0],
+      [min_side,half_min_side],
+      [half_min_side,min_side]
+    ],
+    close:true,
+    s:circle_1_col,
+    //f:'',
+    sw:default_stroke_width,
+    name:'t_or_l_inset_square'
+  })
+  let circle_2_col=red
+  let left_of_aligned_right=width-min_side
+  let br=`<circle cx="${width-min_side/2}" cy="${height-min_side/2}" r="${min_side/2}" style="fill:none;stroke:#${all_grey_lines.checked?grey:circle_2_col};stroke-width:${default_stroke_width}"/>`+
+  create_svg_path({
+    //45deg rotated square INSIDE of circle
+    p:[
+      [left_of_aligned_right,
+      height-half_min_side
+      ],
+      [left_of_aligned_right+half_min_side,
+      height-min_side
+      ],
+      [left_of_aligned_right+min_side,
+      height-half_min_side
+      ],
+      [left_of_aligned_right+half_min_side,
+      height
+      ]
+    ],
+    close:true,
+    s:circle_2_col,
+    //f:'',
+    sw:default_stroke_width,
+    name:'b_or_r_inset_square'
+  })
+  let rv =`<g id="rabatment_circles">${tl+br}</g>`
+  return rv
+}
+sf.rabatment_squares_left_or_top=()=>{
+  //LEFT or TOP
+  let lt_color=red
+  let lt_box=make_rect({
+    x:0,
+    y:0,
+    w:min_side,
+    h:min_side,
+   // f:lt_color,
+    // fo:'.25',
+    name:`l_or_t_square`,
+    s:lt_color,
+    //o:'.25'
+  })
+  let lt_cross=`<g id="rabatment_l_or_t_X">`+
+  //tl to br
+  create_svg_line({
+    start:{x:0,y:0},
+    end:{x:min_side,y:min_side},
+    hex:lt_color
+    })
+    +
+    //bl to tr
+    create_svg_line({
+    start:{x:0,y:min_side},
+    end:{x:min_side,y:0},
+    hex:lt_color
+    })
+  +`</g>`
+  return `<g id="rabatment_L_or_T">${lt_box+lt_cross}</g>`
+}
+sf.rabatment_squares_right_or_bottom=()=>{
+  //RIGHT or Bottom
+    let rb_color=red
+  let rb_box=make_rect({
+    x:width-min_side,
+    y:height-min_side,
+    w:min_side,
+    h:min_side,
+    //f:rb_color,
+    //fo:'.25'
+    name:`r_or_b_square`,
+    s:rb_color,
+    //o:'.25'
+  })
+  let rb_x=`<g id="rabatment_r_or_b_X">`+
+  //tl to br
+  create_svg_line({
+    start:{x:width-min_side,y:height-min_side},
+    end:{x:width,y:height},
+    hex:rb_color
+    })
+    +
+    //bl to tr
+    create_svg_line({
+    start:{x:width-min_side,y:height},
+    end:{x:width,y:height-min_side},
+    hex:rb_color
+    })
+    +`</g>`
+return `<g id="rabatment_R_or_B">${rb_box+rb_x}</g>`
+}
+// ASSEMBLE 
+// First added item == backmost
+// Last added == frontmost
+let checklist= [
+'grid_6x6',
+'grid_5x5',
+'grid_4x4',
+'grid_3x3',//in front of 6x6 - to stay visible if both on
+`rabatment_squares_right_or_bottom`,
+`rabatment_squares_left_or_top`,
+'rabatment_circles',
+'baroque',
+'diamond',
+'triangles_big',
+'triangles_small',
+'main_diagonals',
+`harmonious_triangle`,
+`golden_triangle`,
+'center_lines',
+]
+checklist.forEach(el_id=>{//el_id also equals fn name
+  //console.log(el_id,el,el[el_id])
+  if(el[el_id].checked)items.push(sf[el_id]())
+})
+let x_by_x=`${el.ratio_width.value}x${el.ratio_height.value}`
+function escape_for_svg_id(text) {
+    let escaped = text
+    .trim()
+    .replace(/[^a-zA-Z0-9-_:.]/g, '_')
+    .replace(/ {2,}/g,'_')//max 1 space
+    .replaceAll(' ','_')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+    //can't start with number
+    return (/^\d/.test(escaped)?'_':'')+escaped
+}
+let svg_name=escape_for_svg_id(
+  `Armature ${get_date_stamp()} via ${gl0._by}`
+)
+gl0.svg = 
+`<?xml version="1.0" encoding="iso-8859-1"?>
+<svg version="1.1"
+id="${svg_name}" 
+xmlns="http://www.w3.org/2000/svg"
+xmlns:xlink="http://www.w3.org/1999/xlink"
+x="0px" y="0px" viewBox="0 0 ${width} ${height}" 
+style="enable-background:new 0 0 ${width} ${height};" 
+xml:space="preserve"
+>
+  <g id="${svg_name}">
+  ${make_rect({
+    x:0,
+    y:0,
+    w:width,
+    h:height,
+    //f:black,
+    s:grey,
+    sw:default_stroke_width,
+    name:'Background'
+  })
+  }
+  ${items.join('\n')}
+</g>
+</svg>`.trim()
+      //document.getElementById('svg_code').value = gl0.svg
+      document.getElementById('svg_holder').innerHTML = gl0.svg
+  //log W&H for 'save PNG' fn to reference and scale by:
+  gl0.svg_width=width
+  gl0.svg_height=height
+  gl0.png=null//As SVG has changed, clear any obsolete PNG
+}
+    window.onload = generate_svg
+</script>
+</body>
+</html>
