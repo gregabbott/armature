@@ -153,6 +153,7 @@ footer,footer  *{
       flex-direction: column;
     }
     .field {
+      user-select: none;
       align-items: center;
       width: 100%;
       background: var(--bg);
@@ -288,6 +289,7 @@ footer,footer  *{
       background-color: var(--dark);
       opacity: .5;
     }
+
 #input_tab_nav *{
   user-select: none;
   cursor: pointer;
@@ -351,6 +353,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     </div><!--end input_area_ratio_tab -->
     <div id="input_area_grid_tab" class="section">
       <div class="field">
+        <input id="margin" type="checkbox" checked>
+        <label for="margin">Margin</label>
+      </div>
+      <div class="field">
+        <input id="_mat" type="checkbox">
+        <label for="_mat">Mat (Empty area around picture area)</label>
+      </div>
+      <div class="field">
         <input id="all_grey_lines" type="checkbox" >
         <label for="all_grey_lines">Grey</label>
       </div>
@@ -377,8 +387,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       <div class="box">
         <p>Baroque <span title="Major + minor diagonals intersect at 90&deg;. Resizing the output to a different ratio would change the intersection angle and cause the grid to no longer function as a baroque armature.">(Specific to Canvas Ratio)</span></p>
       <div class="field">
-        <input id="baroque" type="checkbox" >
-        <label for="baroque" title=>Full</label>
+        <input id="baroque_minors" type="checkbox" >
+        <label for="baroque_minors" title=>Baroque minors lines</label>
       </div>
       <!--Simpler grids based on baroque armature:-->
         <div class="field">
@@ -453,12 +463,43 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   <script>
     let gl0={}//global namespace toplevel for access
     gl0._by=`Greg Abbott`
+//COLOURS Palette
+const hex={}
+//hueless
+hex.grey='808080'
+hex.white='ffffff'
+hex.black='000000'
+//colour
+/*varying values:
+hex.silver='cccccc'
+hex.red='FF0000'
+hex.orange=`ff9900`
+hex.yellow=`FFCC00`//'classic_gold' = FFD700
+hex.green=`00ff00`
+hex.mint='00ffbb'
+hex.cyan='00ffff'
+hex.blue='0088ff'
+hex.purpleDark=`663388`
+hex.purpleBright='8800ff'
+hex.pink = `ff00ff`
+*/
+/* mid value mid saturation */
+hex.red=`c6555c`
+hex.orange=`c05e2c`
+hex.yellow=`8c7b2f`
+hex.green=`50883e`
+hex.mint=`008d6e`
+hex.blue=`078ca6`
+hex.navy=`4c7abd`
+hex.purple=`8b6aae`
+hex.pink=`b35b97`
+hex.silver=`7d7980`
     //grab elements from DOM
     function get_id(x){return document.getElementById(x)}
     let el={}
     let grid_item_options_ids=[
       `main_diagonals`,
-      `baroque`,
+      `baroque_minors`,
       `center_lines`,
       `triangles_small`,
       `triangles_big`,
@@ -475,6 +516,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     ]
     let other_item_options_ids=[
       `all_grey_lines`,
+      `_mat`,
+      `margin`,
       `ratio_width`,
       `ratio_height`,
     ]
@@ -566,16 +609,17 @@ function saving_files(){
     })
     .then(png_data=>{
         gl0.png=
-        png_data
+        //png_data
         // Maximum call stack issue with:
-        // insert_text_chunks_into_png(png_data,png_meta)
+        insert_text_chunks_into_png(png_data,png_meta)
         png_saver()
     })
   }
+  
+  //Notes re below FN: insert_text_chunks_into_png 2025_0214
+  //Note PNG text chunks differ to EXIF or IPTC
+  //View PNG in dedicated image app to see inserted data
   function insert_text_chunks_into_png(base64_png, text_chunks) {
-    //2025_0214
-    //Note PNG text chunks differ to EXIF or IPTC
-    //View PNG in dedicated image app to see inserted data
   function crc32(buf) {
     let table = new Uint32Array(256)
     for (let i = 0; i < 256; i++) {
@@ -589,43 +633,48 @@ function saving_files(){
     }
     return new Uint8Array([(crc ^ 0xFFFFFFFF) >>> 24 & 255, (crc ^ 0xFFFFFFFF) >>> 16 & 255, (crc ^ 0xFFFFFFFF) >>> 8 & 255, (crc ^ 0xFFFFFFFF) & 255])
   }
+  function uint8_to_base64(uint8) {
+    let binary = ''
+    let chunk_size = 8192
+    for (let i = 0; i < uint8.length; i += chunk_size) {
+      binary += String.fromCharCode.apply(null, uint8.subarray(i, i + chunk_size))
+    }
+    return btoa(binary)
+  }
   let bin = atob(base64_png.split(',')[1])
   let bytes = new Uint8Array(bin.length)
   for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
-  let header = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]) // PNG signature
+  let header = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])
   if (!bytes.slice(0, 8).every((b, i) => b === header[i])) 
     throw new Error("Not a valid PNG file")
-  let pos = 8 // After header
+  let pos = 8
   while (pos < bytes.length) {
     let len = (bytes[pos] << 24) | (bytes[pos+1] << 16) | (bytes[pos+2] << 8) | bytes[pos+3]
     let type_str = new TextDecoder().decode(bytes.slice(pos+4, pos+8))
-    if (type_str === "IHDR") pos += len + 12 // Skip header
+    if (type_str === "IHDR") pos += len + 12
     else break
   }
-  Object.entries(text_chunks)
-  .forEach(([keyword, text]) => {
-    let text_data = new TextEncoder().encode(keyword + '\0' + text) // tEXt format
-    let length = new Uint8Array([
-      (text_data.length >> 24) & 255,
-      (text_data.length >> 16) & 255, 
-      (text_data.length >> 8) & 255,
-      text_data.length & 255
-    ])
+  let chunk_list = [bytes.slice(0, pos)]
+  Object.entries(text_chunks).forEach(([keyword, text]) => {
+    let text_data = new TextEncoder().encode(keyword + '\0' + text)
+    let length = new Uint8Array([(text_data.length >> 24) & 255, (text_data.length >> 16) & 255, (text_data.length >> 8) & 255, text_data.length & 255])
     let type = new TextEncoder().encode("tEXt")
     let data = new Uint8Array([...type, ...text_data])
-    // Calculate CRC32 for 'tEXt' + content:
     let crc = crc32(data)
-    let chunk_bytes = new Uint8Array([...length,...data,...crc])
-    bytes = new Uint8Array([
-      ...bytes.slice(0, pos),
-      ...chunk_bytes,
-      ...bytes.slice(pos)
-    ])
-    pos += chunk_bytes.length
+    chunk_list.push(length, data, crc)
   })
-  let new_base64 = "data:image/png;base64," + btoa(String.fromCharCode(...bytes))
-  return new_base64
+  chunk_list.push(bytes.slice(pos))
+  let updated_bytes = new Uint8Array(chunk_list.reduce((sum, arr) => sum + arr.length, 0))
+  let offset = 0
+  chunk_list.forEach(chunk => {
+    updated_bytes.set(chunk, offset)
+    offset += chunk.length
+  })
+  return "data:image/png;base64," + uint8_to_base64(updated_bytes)
 }
+
+
+
 function convert_svg_to_png({svg, width = 300, height = 300}) {
   return new Promise(resolve => {
     let img = new Image()
@@ -739,7 +788,7 @@ el.show_input_area_grid_tab.click()
         },
         {
           name:`Baroque`,
-          opts:[`main_diagonals`,`baroque`]
+          opts:[`main_diagonals`,`baroque_minors`]
         },
         {
           name:'- Golden Triangle',
@@ -895,7 +944,7 @@ let presets_area=get_id('ratio_presets')
     })
     }
     button_to_copy_svg.onclick=()=>{
-      copy_to_clipboard(gl0.svg,button_to_copy_svg)//XXX
+      copy_to_clipboard(gl0.svg,button_to_copy_svg)
     }
 function copy_to_clipboard(str,element) {
 navigator.clipboard.writeText(str)
@@ -907,12 +956,8 @@ navigator.clipboard.writeText(str)
 .catch(err=>{console.error('Failed to copy text: ', err)})
 }
 button_to_flip.onclick=()=>{
-  //get
-  let initial_width=el.ratio_width.value
-  let initial_height=el.ratio_height.value
-  //swap
-  el.ratio_width.value=initial_height
-  el.ratio_height.value=initial_width
+  [el.ratio_width.value,el.ratio_height.value]=
+  [el.ratio_height.value,el.ratio_width.value]
   generate_svg()
 }
 function generate_svg () {
@@ -945,22 +990,7 @@ let mm=[center_x,center_y]
 let bl=[0,height]
 let bm=[center_x,height]
 let br=[width,height]
-//COLOURS
-let grey='808080'
-let mint='00ffbb'
-let orange=`ff9900`
-let yellow=`ffff00`
-let red='FF0000'
-let blue='0088ff'
-let cyan='00ffff'
-let green=`00ff00`
-let white='ffffff'
-let black='000000'
-let silver='cccccc'
-let purple=`663388`//RAW:6600ff
-let purple_bright='8800ff'
-let gold=`FFCC00`//'classic_gold' = FFD700
-let pink = `ff00ff`
+
 function get_perpendicular_intersection(width, height) {
 var x = (width * height * height) / (width * width + height * height)
 var y = height - (width * width * height) / (width * width + height * height)
@@ -990,10 +1020,11 @@ sf.harmonious_triangle=()=>{
   if(!_temp.cords)get_coords_where_diagonals_intersect()
   let maj=create_svg_path({
   p:[tl,br],
-  s:blue,
+  s:hex.blue,
   sw:default_stroke_width,
   name:'harmonious_major'
   })
+  let minor_color=hex.red
   let min1=create_svg_path({
     //from bl, up and right, until touches main diag
   p:[bl,
@@ -1001,7 +1032,7 @@ sf.harmonious_triangle=()=>{
     _temp.cords.a.end.y,
   ]
     ],
-  s:red,
+  s:minor_color,
   sw:default_stroke_width,
   name:'harmonious_minor_1'
   })
@@ -1013,7 +1044,7 @@ sf.harmonious_triangle=()=>{
   ],
   tr
     ],
-  s:red,
+  s:minor_color,
   sw:default_stroke_width,
   name:'harmonious_minor_2'
   })
@@ -1023,10 +1054,11 @@ sf.golden_triangle=()=>{
   if(!_temp.cords)get_coords_where_diagonals_intersect()
   let maj=create_svg_path({
   p:[bl,tr],
-  s:blue,
+  s:hex.blue,
   sw:default_stroke_width,
   name:'golden_major'
   })
+  let minor_color=hex.red
 let min1=create_svg_path({
     //from tl, down and right, until touches main diag
   p:[
@@ -1035,7 +1067,7 @@ let min1=create_svg_path({
     _temp.cords.b.start.y,
   ],
     ],
-  s:red,
+  s:minor_color,
   sw:default_stroke_width,
   name:'golden_minor_1'
   })
@@ -1047,37 +1079,40 @@ let min2=create_svg_path({
     _temp.cords.a.end.y,
   ],
     ],
-  s:red,
+  s:minor_color,
   sw:default_stroke_width,
   name:'golden_minor_2'
   })
    return `<g id="golden_triangle">`+maj+min1+min2+`</g>`
 }
-sf.baroque= function (){
+sf.baroque_minors= function (){
+  //doesnt do main diagonals (as those are separate func)
   if(!_temp.cords)get_coords_where_diagonals_intersect()
 //use '_temp.cords' to get Horizontal Vertical lines 
   // where the major and minor diagonals intersect at 90 degrees
+  //XXX console.log(hex)
+  let baroque_col=hex.navy
 let intersect_point_1=_temp.cords.a.end.x
 let intersect_point_left_vertical=create_svg_line({
   start:{y:0,x:intersect_point_1},
   end:{y:height,x:intersect_point_1},
-  hex:cyan
+  hex:baroque_col
     })
 let intersect_point_top_horizontal=create_svg_line({
   start:{x:0,y:_temp.cords.a.end.y},
   end:{x:width,y:_temp.cords.a.end.y},
-  hex:cyan
+  hex:baroque_col
     })
 let intersect_point_2=_temp.cords.b.start.x
 let intersect_point_bottom_horizontal=create_svg_line({
   start:{x:0,y:_temp.cords.b.start.y},
   end:{x:width,y:_temp.cords.b.start.y},
-  hex:cyan
+  hex:baroque_col
     })
     let intersect_point_right_vertical=create_svg_line({
   start:{y:0,x:intersect_point_2},
   end:{y:height,x:intersect_point_2},
-  hex:cyan
+  hex:baroque_col
     })
 let intersecting_h_and_v_lines = 
   intersect_point_left_vertical+
@@ -1129,22 +1164,22 @@ function getDiagonalCrossingPoints({width, height}) {
 }
 //lines from corner to other side which cross main diag @ 90deg
 const minor_line = getDiagonalCrossingPoints({width, height})
-let hex = blue
+let minor_color = hex.blue
 let minor_line_from_br=create_svg_line({
     ...minor_line.bottomRight,
-    hex
+    hex:minor_color
   })
 let minor_line_from_tl=create_svg_line({
     ...minor_line.topLeft,
-    hex
+    hex:minor_color
   })
   let minor_line_from_bl=create_svg_line({
     ...minor_line.bottomLeft,
-    hex
+    hex:minor_color
   })
   let minor_line_from_tr=create_svg_line({
     ...minor_line.topRight,
-    hex
+    hex:minor_color
   })
  // DRAW BOX AROUND THE AREA OF MINOR DIAGONAL
   //(unlike a line, simpler code works for portrait & landscape)
@@ -1161,7 +1196,7 @@ let minor_line_from_tl=create_svg_line({
     minor_line.bottomRight.end.y
   ,
   f:'',//none
-  s:grey,
+  s:hex.grey,
   sw:default_stroke_width
   })
   let left_or_top_minor_box=
@@ -1176,7 +1211,7 @@ let minor_line_from_tl=create_svg_line({
     minor_line.bottomLeft.end.y
   ,
   f:'',//none
-  s:grey,
+  s:hex.grey,
   sw:default_stroke_width
   })
 let minor_lines_boxes=
@@ -1209,7 +1244,7 @@ function create_svg_path({p,close = false,s='',f='',sw='',name}) {
       path += `Z`
   }
 let id=name.trim().length>0?` id="${escape_for_svg_id(name)}"`:``
-s=s.trim().length>0?`stroke:#${el.all_grey_lines.checked?grey:s.trim()};`:``
+s=s.trim().length>0?`stroke:#${unless_grey(s)};`:``
 sw=sw.trim().length>0?`stroke-width:${sw};stroke-linecap:round;stroke-linejoin:round;`:``
 f=`fill:${f.trim().length>0?f.trim():'none'};`
   return `<path ${id} d="${path.trim()}" style="${s}${sw}${f}"/>`
@@ -1226,7 +1261,7 @@ function create_svg_line({start, end,hex='FF0000', name=''}) {
   })
   return path
 }
-let triangle_col=purple_bright
+let triangle_col=hex.purple
 function get_left_right_triangles(){
   let triangle_pointing_right= create_svg_path({
     p:[
@@ -1235,7 +1270,7 @@ function get_left_right_triangles(){
       bl,
     ],
     close:false,
-    s:is_landscape?pink:purple_bright,
+    s:is_landscape?hex.pink:hex.purple,
     //f:'',
     sw:default_stroke_width,
     name:'triangle_pointing_right'
@@ -1247,7 +1282,7 @@ function get_left_right_triangles(){
       br,
     ],
     close:false,
-    s:is_landscape?pink:purple_bright,
+    s:is_landscape?hex.pink:hex.purple,
     //f:'',
     sw:default_stroke_width,
     name:'triangle_pointing_left'
@@ -1266,7 +1301,7 @@ function get_up_down_triangles(){
       br,
     ],
     close:false,
-    s:is_landscape?purple_bright:pink,
+    s:is_landscape?hex.purple:hex.pink,
     //f:'',
     sw:default_stroke_width,
     name:'triangle_pointing_up'
@@ -1279,7 +1314,7 @@ function get_up_down_triangles(){
       tr,
     ],
     close:false,
-    s:is_landscape?purple_bright:pink,
+    s:is_landscape?hex.purple:hex.pink,
     //f:'',
     sw:default_stroke_width,
     name:'triangle_pointing_down'
@@ -1304,13 +1339,13 @@ sf.center_lines=()=>{
   let horizontal_line_center=create_svg_line({
       start:{x:0,y:center_y},
       end:{x:width,y:center_y},
-      hex:green,
+      hex:hex.green,
       name:`center line horizontal`
     })
 let vertical_line_center=create_svg_line({
   start:{x:center_x,y:0},
   end:{x:center_x,y:height},
-  hex:green,
+  hex:hex.green,
   name:`center line vertical`
 })
 let center_lines = `<g id="center_lines">`
@@ -1323,13 +1358,13 @@ sf.main_diagonals=()=>{
   let main_diagonal_tl_2_br__harmonious=create_svg_line({
     start:{x:0,y:0},
     end:{x:width,y:height},
-    hex:gold,
+    hex:hex.yellow,
     name:'Harmonious'
   })
   let main_diagonal_bl_2_tr__golden=create_svg_line({
     start:{x:0,y:height},
     end:{x:width,y:0},
-    hex:gold,
+    hex:hex.yellow,
     name:'Golden'
   })
    let main_diagonals=`<g id="Diagonals_main">`
@@ -1344,10 +1379,10 @@ sf.main_diagonals=()=>{
     let _c = {x:width,y:center_y}
     let _d ={x:center_x,y:height}
   diamond_svg=`<g id="Diamond">`
-+create_svg_line({start:_a,end:_b,hex:silver})
-+create_svg_line({start:_b,end:_c,hex:silver})
-+create_svg_line({start:_c,end:_d,hex:silver})
-+create_svg_line({start:_d,end:_a,hex:silver})
++create_svg_line({start:_a,end:_b,hex:hex.silver})
++create_svg_line({start:_b,end:_c,hex:hex.silver})
++create_svg_line({start:_c,end:_d,hex:hex.silver})
++create_svg_line({start:_d,end:_a,hex:hex.silver})
 +`</g>`
 return diamond_svg
 }
@@ -1357,7 +1392,7 @@ sf.grid_3x3=()=>{
   height,
   rows:3,
   cols:3,
-  stroke:orange,
+  stroke:hex.orange,
   fill:'',
   stroke_width:default_stroke_width,
 })
@@ -1369,7 +1404,7 @@ sf.grid_4x4=()=>{
   height,
   rows:4,
   cols:4,
-  stroke:mint,
+  stroke:hex.mint,
   fill:'',
   stroke_width:default_stroke_width,
 })
@@ -1381,7 +1416,7 @@ sf.grid_5x5=()=>{
   height,
   rows:5,
   cols:5,
-  stroke:mint,
+  stroke:hex.mint,
   fill:'',
   stroke_width:default_stroke_width,
 })
@@ -1393,7 +1428,7 @@ sf.grid_6x6=()=>{
   height,
   rows:6,
   cols:6,
-  stroke:mint,
+  stroke:hex.mint,
   fill:'',
   stroke_width:default_stroke_width,
 })
@@ -1445,21 +1480,24 @@ function make_rect({
 let fill=`fill:${
   f.trim().length===0?'none'
   :
-  '#'+(el.all_grey_lines.checked?grey:f)
+  '#'+(unless_grey(f))
   }; `
 let stroke=
   s.trim().length===0?''
-  :`stroke:#${el.all_grey_lines.checked?grey:s.trim()}; `
+  :`stroke:#${unless_grey(s)}; `
 sw=sw.trim().length>0?`stroke-width:${sw.trim()};`:''
 o=o.trim().length>0?`opacity:${o};`:''
 fo=fo.trim().length>0?`fill-opacity:${fo};`:''
   return  `<rect ${id_att} style="${fo}${fill}${stroke}${sw}${o}" width="${w}" height="${h}" x="${x}" y="${y}"/>`
 }
+function unless_grey(col){
+return all_grey_lines.checked?hex.grey:col.trim()
+}
 sf.rabatment_circles=()=>{
   let half_min_side=min_side/2
-  let circle_1_col=red
+  let circle_1_col=hex.red
   //circle cX = X position of center of circle, same for cy
-  let tl=`<circle cx="${half_min_side}" cy="${half_min_side}" r="${half_min_side}" style="fill:none;stroke:#${all_grey_lines.checked?grey:circle_1_col};stroke-width:${default_stroke_width}"/>`
+  let tl=`<circle cx="${half_min_side}" cy="${half_min_side}" r="${half_min_side}" style="fill:none;stroke:#${unless_grey(circle_1_col)};stroke-width:${default_stroke_width}"/>`
   +
   create_svg_path({
     //45deg rotated square INSIDE of circle
@@ -1475,9 +1513,9 @@ sf.rabatment_circles=()=>{
     sw:default_stroke_width,
     name:'t_or_l_inset_square'
   })
-  let circle_2_col=red
+  let circle_2_col=hex.red
   let left_of_aligned_right=width-min_side
-  let br=`<circle cx="${width-min_side/2}" cy="${height-min_side/2}" r="${min_side/2}" style="fill:none;stroke:#${all_grey_lines.checked?grey:circle_2_col};stroke-width:${default_stroke_width}"/>`+
+  let br=`<circle cx="${width-min_side/2}" cy="${height-min_side/2}" r="${min_side/2}" style="fill:none;stroke:#${unless_grey(circle_2_col)};stroke-width:${default_stroke_width}"/>`+
   create_svg_path({
     //45deg rotated square INSIDE of circle
     p:[
@@ -1505,7 +1543,7 @@ sf.rabatment_circles=()=>{
 }
 sf.rabatment_squares_left_or_top=()=>{
   //LEFT or TOP
-  let lt_color=red
+  let lt_color=hex.red
   let lt_box=make_rect({
     x:0,
     y:0,
@@ -1536,7 +1574,7 @@ sf.rabatment_squares_left_or_top=()=>{
 }
 sf.rabatment_squares_right_or_bottom=()=>{
   //RIGHT or Bottom
-    let rb_color=red
+    let rb_color=hex.red
   let rb_box=make_rect({
     x:width-min_side,
     y:height-min_side,
@@ -1565,10 +1603,97 @@ sf.rabatment_squares_right_or_bottom=()=>{
     +`</g>`
 return `<g id="rabatment_R_or_B">${rb_box+rb_x}</g>`
 }
+sf.margin=()=>{
+  let margin_as_percent =.05//percent
+  let margin_as_px=max_side*margin_as_percent
+  let area_w = width-(margin_as_px*2)
+  let area_h = height-(margin_as_px*2)
+  return make_rect({
+    x:margin_as_px,
+    y:margin_as_px,
+    w:area_w ,
+    h:area_h,
+    //f:hex.black,
+    s:hex.grey,
+    sw:default_stroke_width,
+    name:'Margin'
+  })
+}
+let mat_as_px=0
+let width_plus_mat=0
+let height_plus_mat=0
+sf._mat=()=>{
+  let margin_as_percent =.05//percent
+  //override globals
+    mat_as_px=max_side*margin_as_percent
+    width_plus_mat=width+(mat_as_px*2)
+    height_plus_mat=height+(mat_as_px*2)
+  //make strips and group
+  /* mat area
+   make_rect({
+    x:-mat_as_px,
+    y:-mat_as_px,
+    w:width_plus_mat,
+    h:height_plus_mat,
+    f:hex.white,
+    fo:'0',
+    //s:hex.grey,
+    //sw:default_stroke_width,
+    name:'Mat'
+  })
+  */
+ //FRAME
+ let t = make_rect({
+    x:-mat_as_px,
+    y:-mat_as_px,
+    w:width_plus_mat,
+    h:mat_as_px,
+    f:hex.white,
+   // fo:'0',
+    //s:hex.grey,
+    //sw:default_stroke_width,
+    name:'Mat_top'
+  })
+  let r = make_rect({
+    x:width,
+    y:-mat_as_px,
+    w:mat_as_px,
+    h:height_plus_mat,
+    f:hex.white,
+    //fo:'0',
+    //s:hex.grey,
+    //sw:default_stroke_width,
+    name:'Mat_right'
+  })
+  let b = make_rect({
+    x:-mat_as_px,
+    y:height,
+    w:width_plus_mat,
+    h:mat_as_px,
+    f:hex.white,
+   // fo:'0',
+    //s:hex.grey,
+    //sw:default_stroke_width,
+    name:'Mat_bottom'
+  })
+  let l = make_rect({
+    x:-mat_as_px,
+    y:-mat_as_px,
+    w:mat_as_px,
+    h:height_plus_mat,
+    f:hex.white,
+    //fo:'0',
+    //s:hex.grey,
+    //sw:default_stroke_width,
+    name:'Mat_left'
+  })
+  return `<g id="mat" style="opacity:.0">${t+r+b+l}</g>`
+}
 // ASSEMBLE 
 // First added item == backmost
 // Last added == frontmost
 let checklist= [
+`_mat`,//border
 'grid_6x6',
 'grid_5x5',
 'grid_4x4',
@@ -1576,7 +1701,7 @@ let checklist= [
 `rabatment_squares_right_or_bottom`,
 `rabatment_squares_left_or_top`,
 'rabatment_circles',
-'baroque',
+'baroque_minors',
 'diamond',
 'triangles_big',
 'triangles_small',
@@ -1584,6 +1709,7 @@ let checklist= [
 `harmonious_triangle`,
 `golden_triangle`,
 'center_lines',
+`margin`,
 ]
 checklist.forEach(el_id=>{//el_id also equals fn name
   //console.log(el_id,el,el[el_id])
@@ -1607,14 +1733,19 @@ function escape_for_svg_id(text) {
 let svg_name=escape_for_svg_id(
   `Armature ${get_date_stamp()} via ${gl0._by}`
 )
+
+let svg_w=mat_as_px>0?width_plus_mat:width
+let svg_h=mat_as_px>0?height_plus_mat:height
+let svg_x=mat_as_px>0?-mat_as_px:0
+let svg_y=mat_as_px>0?-mat_as_px:0
+let view_box=`${svg_x} ${svg_y} ${svg_w} ${svg_h}`
 gl0.svg = 
 `<?xml version="1.0" encoding="iso-8859-1"?>
 <svg version="1.1"
 id="${svg_name}" 
 xmlns="http://www.w3.org/2000/svg"
 xmlns:xlink="http://www.w3.org/1999/xlink"
-x="0px" y="0px" viewBox="0 0 ${width} ${height}" 
-style="enable-background:new 0 0 ${width} ${height};" 
+x="${svg_x}px" y="${svg_y}px" width="${svg_w}" height="${svg_h}" viewBox="${view_box}" 
 xml:space="preserve"
 >
   <g id="${svg_name}">
@@ -1623,8 +1754,8 @@ xml:space="preserve"
     y:0,
     w:width,
     h:height,
-    //f:black,
-    s:grey,
+    //f:hex.black,
+    s:hex.grey,
     sw:default_stroke_width,
     name:'Background'
   })
