@@ -5,7 +5,9 @@ The tool includes a simple user interface with presets for harmonic symmetry, dy
 
 The project packs everything into a single html file tool that can run offline in a web browser with JavaScript enabled. 
 
-- Use the tool at [the main site](https://armature.pages.dev/) (and [GitHub Pages](https://gregabbott.github.io/armature/)).
+- Use the tool at:
+  - https://gregabbott.pages.dev/armature
+  - https://gregabbott.github.io/armature
 - Support via:
   - [Buy me a coffee](https://buymeacoffee.com/gregabbott)
   - [Kofi](https://ko-fi.com/gregabbott)
